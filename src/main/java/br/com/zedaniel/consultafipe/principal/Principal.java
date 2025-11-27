@@ -1,6 +1,7 @@
 package br.com.zedaniel.consultafipe.principal;
 
 import br.com.zedaniel.consultafipe.model.DadosMarca;
+import br.com.zedaniel.consultafipe.model.DadosModelo;
 import br.com.zedaniel.consultafipe.service.ConsumoApi;
 import br.com.zedaniel.consultafipe.service.ConversorJson;
 import tools.jackson.databind.json.JsonMapper;
@@ -18,9 +19,11 @@ public class Principal {
     private Scanner scanner = new Scanner(System.in);
     private final String INICIO_URL = "https://parallelum.com.br/fipe/api/v1/";
     private final String POS_TIPO = "/marcas/";
+    private final String POS_MARCA = "/modelos/";
     private String tipoVeiculo;
     private List<DadosMarca> listaMarcas;
-    private int marca;
+    private List<DadosMarca> listaModelos;
+    private int codigoMarca;
 
     public void inicializar(){
         ConsumoApi consumoApi = new ConsumoApi();
@@ -35,6 +38,21 @@ public class Principal {
                 .collect(Collectors.toList());
 
         pedeMarca();
+
+        String uriModelos = uriMarcas + codigoMarca + POS_MARCA;
+        String modelos = consumoApi.obterDados(uriModelos);
+        System.out.println(modelos);
+
+        DadosModelo retornoModelo = conversorJson.obterDados(modelos, DadosModelo.class);
+        listaModelos = retornoModelo.modelos();
+
+        listaModelos = listaModelos.stream()
+                .sorted(Comparator.comparing(DadosMarca::nome))
+                .collect(Collectors.toList());
+
+        pedeModelo();
+
+
 
 
 
@@ -86,7 +104,7 @@ public class Principal {
 
     public void pedeMarca(){
         try{
-            System.out.println("--------------------------------\nLista de marcas:\n\n");
+            System.out.println("--------------------------------\nLista de marcas:\n");
             listaMarcas.forEach(m -> System.out.println("Nome: " + m.nome() +
                     ", Código: " + m.codigo()));
 
@@ -108,7 +126,44 @@ public class Principal {
             if(busca.isEmpty())
                 throw new InputMismatchException();
             else{
-                this.marca = menu;
+                this.codigoMarca = menu;
+                return;
+            }
+
+
+        }catch (InputMismatchException e){
+            System.out.println("Você deve digitar um número correspondente!");
+            pedeMarca();
+        }
+
+
+    }
+
+    public void pedeModelo(){
+        try{
+            System.out.println("--------------------------------\nLista de modelos:\n");
+            listaModelos.forEach(m -> System.out.println("Nome: " + m.nome() +
+                    ", Código: " + m.codigo()));
+
+            System.out.println("---------------------------------\nDigite o código da marca que você deseja: ");
+            int menu;
+            menu = 0;
+
+            /// //
+
+            menu = scanner.nextInt();
+            scanner.nextLine();
+            Integer menuInteger = menu;
+
+
+            Optional<DadosMarca> busca = listaMarcas.stream()
+                    .filter(m -> m.codigo().equals(menuInteger))
+                    .findFirst();
+
+            if(busca.isEmpty())
+                throw new InputMismatchException();
+            else{
+                this.codigoMarca = menu;
                 return;
             }
 
