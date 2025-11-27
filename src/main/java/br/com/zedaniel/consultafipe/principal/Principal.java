@@ -1,12 +1,17 @@
 package br.com.zedaniel.consultafipe.principal;
 
+import br.com.zedaniel.consultafipe.model.DadosMarca;
+import br.com.zedaniel.consultafipe.service.ConsumoApi;
+import br.com.zedaniel.consultafipe.service.ConversorJson;
+import tools.jackson.databind.json.JsonMapper;
+
 import java.io.IOException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.util.InputMismatchException;
-import java.util.Scanner;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class Principal {
 
@@ -14,16 +19,30 @@ public class Principal {
     private final String INICIO_URL = "https://parallelum.com.br/fipe/api/v1/";
     private final String POS_TIPO = "/marcas/";
     private String tipoVeiculo;
+    private List<DadosMarca> listaMarcas;
+    private int marca;
 
     public void inicializar(){
-        pedeVeiculo();
-        String uri = INICIO_URL + tipoVeiculo + POS_TIPO;
-        realizaRequisicao(uri);
+        ConsumoApi consumoApi = new ConsumoApi();
+        pedeTipo();
+        String uriMarcas = INICIO_URL + tipoVeiculo + POS_TIPO;
+        String marcas = consumoApi.obterDados(uriMarcas);
+        ConversorJson conversorJson = new ConversorJson();
+        listaMarcas = conversorJson.obterLista(marcas, DadosMarca.class);
+
+        listaMarcas = listaMarcas.stream()
+                .sorted(Comparator.comparing(DadosMarca::nome))
+                .collect(Collectors.toList());
+
+        pedeMarca();
+
+
+
 
 
     }
 
-    public void pedeVeiculo(){
+    public void pedeTipo(){
         try{
             System.out.println("----------------------------------");
             System.out.println("Que tipo de veículo você deseja pesquisar?");
@@ -34,9 +53,9 @@ public class Principal {
             int menu;
             menu = 0;
 
-
             menu = scanner.nextInt();
             scanner.nextLine();
+
 
             switch (menu){
                 case 1:
@@ -51,29 +70,56 @@ public class Principal {
                 default:
                     throw new InputMismatchException();
             }
+
+
+
+
+
         }catch (InputMismatchException e){
             System.out.println("Você deve digitar um número correspondente!");
-            scanner.nextLine();
-            pedeVeiculo();
+
+            pedeMarca();
         }
 
 
     }
 
-    public void realizaRequisicao(String uri) {
-
-        HttpClient client = HttpClient.newHttpClient();
-        HttpRequest request = HttpRequest.newBuilder()
-                .uri(URI.create(uri))
-                .build();
-
+    public void pedeMarca(){
         try{
-            HttpResponse response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            System.out.println(response.body());
-        }catch (IOException | InterruptedException e){
-            System.out.println("Erro na requisição!");
+            System.out.println("--------------------------------\nLista de marcas:\n\n");
+            listaMarcas.forEach(m -> System.out.println("Nome: " + m.nome() +
+                    ", Código: " + m.codigo()));
+
+            System.out.println("---------------------------------\nDigite o código da marca que você deseja: ");
+            int menu;
+            menu = 0;
+
+            /// //
+
+            menu = scanner.nextInt();
+            scanner.nextLine();
+            Integer menuInteger = menu;
+
+
+            Optional<DadosMarca> busca = listaMarcas.stream()
+                    .filter(m -> m.codigo().equals(menuInteger))
+                    .findFirst();
+
+            if(busca.isEmpty())
+                throw new InputMismatchException();
+            else{
+                this.marca = menu;
+                return;
+            }
+
+
+        }catch (InputMismatchException e){
+            System.out.println("Você deve digitar um número correspondente!");
+            pedeMarca();
         }
-        System.out.println();
+
 
     }
+
+
 }
