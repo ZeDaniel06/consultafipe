@@ -1,7 +1,9 @@
 package br.com.zedaniel.consultafipe.principal;
 
+import br.com.zedaniel.consultafipe.model.DadosAno;
 import br.com.zedaniel.consultafipe.model.DadosMarca;
 import br.com.zedaniel.consultafipe.model.DadosModelo;
+import br.com.zedaniel.consultafipe.model.DadosVeiculo;
 import br.com.zedaniel.consultafipe.service.ConsumoApi;
 import br.com.zedaniel.consultafipe.service.ConversorJson;
 import tools.jackson.databind.json.JsonMapper;
@@ -20,6 +22,7 @@ public class Principal {
     private final String INICIO_URL = "https://parallelum.com.br/fipe/api/v1/";
     private final String POS_TIPO = "/marcas/";
     private final String POS_MARCA = "/modelos/";
+    private final String POS_MODELO = "/anos/";
     private String tipoVeiculo;
     private List<DadosMarca> listaMarcas;
     private List<DadosMarca> listaModelos;
@@ -58,6 +61,19 @@ public class Principal {
                 .collect(Collectors.toList());
 
         pedeModelo(listaModelos);
+
+        String uriAnos = uriModelos + codigoModelo + POS_MODELO;
+        String anos = consumoApi.obterDados(uriAnos);
+        List<DadosVeiculo> listaAnos = conversorJson.obterLista(anos, DadosVeiculo.class);
+
+        listaAnos.stream()
+                .forEach(m ->{
+                    String uriFinal = uriAnos + m.codigo();
+                    String jsonFinal = consumoApi.obterDados(uriFinal);
+                    DadosAno ano =  conversorJson.obterDados(jsonFinal, DadosAno.class);
+                    System.out.println(ano);
+                });
+
 
 
 
@@ -156,10 +172,6 @@ public class Principal {
 
             menu = pedeMenu();
             converteMenuNumerico(menu);
-
-
-
-
 
         }catch (InputMismatchException e){
             System.out.println("Você deve digitar um número correspondente!");
