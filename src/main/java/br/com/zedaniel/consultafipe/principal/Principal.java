@@ -23,7 +23,11 @@ public class Principal {
     private String tipoVeiculo;
     private List<DadosMarca> listaMarcas;
     private List<DadosMarca> listaModelos;
+    private List<DadosMarca> listaAnos;
     private int codigoMarca;
+    private int codigoModelo;
+
+
 
     public void inicializar(){
         ConsumoApi consumoApi = new ConsumoApi();
@@ -46,11 +50,12 @@ public class Principal {
         DadosModelo retornoModelo = conversorJson.obterDados(modelos, DadosModelo.class);
         listaModelos = retornoModelo.modelos();
 
+
         listaModelos = listaModelos.stream()
                 .sorted(Comparator.comparing(DadosMarca::nome))
                 .collect(Collectors.toList());
 
-        pedeModelo();
+        pedeModelo(listaModelos);
 
 
 
@@ -95,8 +100,8 @@ public class Principal {
 
         }catch (InputMismatchException e){
             System.out.println("Você deve digitar um número correspondente!");
-
-            pedeMarca();
+            scanner.nextLine();
+            pedeTipo();
         }
 
 
@@ -126,54 +131,76 @@ public class Principal {
             if(busca.isEmpty())
                 throw new InputMismatchException();
             else{
-                this.codigoMarca = menu;
+                this.codigoMarca = menuInteger;
                 return;
             }
 
 
         }catch (InputMismatchException e){
             System.out.println("Você deve digitar um número correspondente!");
+            scanner.nextLine();
             pedeMarca();
         }
 
 
     }
 
-    public void pedeModelo(){
+    public void pedeModelo(List<DadosMarca> lista){
+        String menu = "a";
         try{
             System.out.println("--------------------------------\nLista de modelos:\n");
-            listaModelos.forEach(m -> System.out.println("Nome: " + m.nome() +
+            lista.forEach(m -> System.out.println("Nome: " + m.nome() +
                     ", Código: " + m.codigo()));
 
-            System.out.println("---------------------------------\nDigite o código da marca que você deseja: ");
-            int menu;
-            menu = 0;
-
-            /// //
-
-            menu = scanner.nextInt();
-            scanner.nextLine();
-            Integer menuInteger = menu;
+            pedeMenu(menu);
+            converteMenuNumerico(menu);
 
 
-            Optional<DadosMarca> busca = listaMarcas.stream()
-                    .filter(m -> m.codigo().equals(menuInteger))
-                    .findFirst();
-
-            if(busca.isEmpty())
-                throw new InputMismatchException();
-            else{
-                this.codigoMarca = menu;
-                return;
-            }
 
 
         }catch (InputMismatchException e){
+            System.out.println("inputmismatch");
             System.out.println("Você deve digitar um número correspondente!");
-            pedeMarca();
+            pedeModelo(lista);
+        }catch (NumberFormatException e){
+            System.out.println("numberformat");
+            String menuu = menu;
+            List<DadosMarca> modelos = lista.stream()
+                    .filter(m -> m.nome().contains(menuu))
+                    .collect(Collectors.toList());
+            System.out.println("Escolha o número correspondente: ");
+            pedeModelo(modelos);
+
         }
 
 
+    }
+
+    public boolean converteMenuNumerico(String menu){
+        Integer menuInteger = Integer.parseInt(menu);
+
+
+        Optional<DadosMarca> busca = listaModelos.stream()
+                .filter(m -> m.codigo().equals(menuInteger))
+                .findFirst();
+
+        if(busca.isEmpty()){
+            throw new InputMismatchException();
+        }
+
+
+        else{
+            this.codigoModelo = menuInteger;
+            return true;
+        }
+    }
+
+    public void pedeMenu(String menu){
+        System.out.println("---------------------------------\nDigite o código do modelo que você deseja: ");
+
+        menu = "0";
+
+        menu = scanner.nextLine();
     }
 
 
