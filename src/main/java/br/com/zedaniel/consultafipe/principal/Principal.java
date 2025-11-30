@@ -180,7 +180,7 @@ public class Principal {
             String menuu = menu;
             System.out.println("menuu = "+menuu);
             List<DadosMarca> modelos = lista.stream()
-                    .filter(m -> m.nome().contains(menuu))
+                    .filter(m -> m.nome().toLowerCase().contains(menuu.toLowerCase()))
                     .collect(Collectors.toList());
             System.out.println("Escolha o número correspondente: ");
             if(modelos.size() != 0){
