@@ -29,6 +29,8 @@ public class Principal {
 
 
 
+
+
     public void inicializar(){
         ConsumoApi consumoApi = new ConsumoApi();
         pedeTipo();
@@ -152,24 +154,29 @@ public class Principal {
             lista.forEach(m -> System.out.println("Nome: " + m.nome() +
                     ", Código: " + m.codigo()));
 
-            pedeMenu(menu);
+            menu = pedeMenu();
             converteMenuNumerico(menu);
 
 
 
 
+
         }catch (InputMismatchException e){
-            System.out.println("inputmismatch");
             System.out.println("Você deve digitar um número correspondente!");
             pedeModelo(lista);
         }catch (NumberFormatException e){
-            System.out.println("numberformat");
             String menuu = menu;
+            System.out.println("menuu = "+menuu);
             List<DadosMarca> modelos = lista.stream()
                     .filter(m -> m.nome().contains(menuu))
                     .collect(Collectors.toList());
             System.out.println("Escolha o número correspondente: ");
-            pedeModelo(modelos);
+            if(modelos.size() != 0){
+                pedeModelo(modelos);
+            }else{
+                pedeModelo(lista);
+            }
+
 
         }
 
@@ -177,6 +184,7 @@ public class Principal {
     }
 
     public boolean converteMenuNumerico(String menu){
+        System.out.println("Convertendo "+menu);
         Integer menuInteger = Integer.parseInt(menu);
 
 
@@ -195,12 +203,14 @@ public class Principal {
         }
     }
 
-    public void pedeMenu(String menu){
+    public String pedeMenu(){
         System.out.println("---------------------------------\nDigite o código do modelo que você deseja: ");
 
-        menu = "0";
+        String menu = "0";
 
         menu = scanner.nextLine();
+
+        return menu;
     }
 
 
